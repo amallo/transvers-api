@@ -1,6 +1,7 @@
+type JobStatus = "done" | "running"
 export interface Job {
     id: string
-    identifier: string
     userId: string
-    status: string
+    status: JobStatus,
+    inputImageId: string
 }

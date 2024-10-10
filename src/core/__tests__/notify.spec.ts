@@ -8,11 +8,11 @@ it("has successfully apocalyptised a picture", async ()=>{
     const jobRepository = new FakeJobRepository()
     const idGenerator = new FakeIdGenerator()
     idGenerator.willGenerate('notification-id-0')
-    jobRepository.withJob({id: 'job-id-0', userId: 'audie', status: 'working', identifier: 'job-external-id-0'})
+    jobRepository.withJob({id: 'job-id-0', userId: 'audie', status: 'running', inputImageId: 'input-image-0'})
   
     const notify = makeNotify({notifier, jobRepository, idGenerator})
     await notify({
-        identifier: 'job-external-id-0',
+        id: 'job-id-0',
         status: 'done',
         picture: 'http://masuperiumage.png'
     })

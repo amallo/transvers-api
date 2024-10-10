@@ -1,9 +1,20 @@
 import {Readable} from 'stream'
 import { DateService } from '../services/date.service'
-export const makeApocalyptize = ({dateService} : {dateService: DateService})=>({input} : {input: Readable})=>{
+import { JobRepository } from '../services/job.repository'
+import { IdGenerator } from '../services/id.generator'
+import { PictureRepository } from '../services/picture.repository'
+
+type Dependencies = {dateService: DateService, jobRepository: JobRepository, jobIdGenerator: IdGenerator, pictureRepository: PictureRepository, pictureIdGenerator: IdGenerator}
+export const makeApocalyptize = ({dateService, jobRepository, jobIdGenerator, pictureRepository, pictureIdGenerator} : Dependencies)=>async ({input, forUser} : {input: Readable, forUser: string})=>{
+    const willCreateJobId = jobIdGenerator.generate()
+    const willSavePictureId = pictureIdGenerator.generate()
+
+    const picturePath = `${forUser}/pictures/${willSavePictureId}.png`
+    await pictureRepository.save({id: willSavePictureId, picture: input, owner: forUser, path: picturePath})
+    const job = await jobRepository.run({id: willCreateJobId, forUser, inputImageId:  willSavePictureId})
     return Promise.resolve({
         at: dateService.nowIs().toISOString(),
         by: 'audie',
-        id: 'job-id-0'
+        jobId: job.id
     })
 }
