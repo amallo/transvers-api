@@ -3,3 +3,4 @@ export interface Picture {
     owner: string
     path: string
 }
+

@@ -1,6 +1,6 @@
 export interface JobNotification{
     id: string
-    picture: string
+    outputId: string
     status: string
     user: string
 }
