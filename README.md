@@ -1,85 +1,39 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# 🌍 Transvers API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+**Transvers** is an API designed to transform your photos into immersive post-apocalyptic scenes. With our advanced image generation technology, you can easily give your images a desolate, dystopian look while preserving their original structure.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## ✨ What You Can Do with Transvers:
 
-## Description
+- 🚀 **Turn your photos into post-apocalyptic worlds**: Transform your ordinary images into striking, dystopian landscapes.
+- 🎨 **Choose from various styles**: Whether you’re going for a dark “The Last of Us” vibe or a wild “Mad Max” style, Transvers offers multiple customization options.
+- 🖼️ **Maintain realism**: The generated images retain a photorealistic look, respecting the original contours and key elements of the image.
+- 💡 **Unleash creative scenarios**: Use Transvers to bring unique visions to life, from desolate urban areas to devastated natural environments.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+---
 
-## Project setup
+## 🛠️ How It Works:
 
-```bash
-$ pnpm install
-```
+1. 📸 **Submit a photo**: Upload an image or provide a link to an existing photo.
+2. 🎛️ **Select your style**: Choose from a variety of post-apocalyptic styles to customize the transformation.
+3. ⏳ **Receive your image**: In just a few seconds, get a transformed version of your photo, ready to be used in creative projects, games, or just to impress.
 
-## Compile and run the project
+---
 
-```bash
-# development
-$ pnpm run start
+## 🎯 Use Cases:
 
-# watch mode
-$ pnpm run start:dev
+- 🎥 **Content creators**: Give your visuals a unique and captivating look for dystopian storytelling.
+- 🎮 **Game developers**: Create textures or visuals for your post-apocalyptic games.
+- 📸 **Photographers and artists**: Transform your existing work into pieces that explore new artistic horizons.
 
-# production mode
-$ pnpm run start:prod
-```
+---
 
-## Run tests
+## 🤔 Why Choose Transvers?
 
-```bash
-# unit tests
-$ pnpm run test
+- 🧩 **Easy to use**: No technical skills required to transform your images.
+- 🖼️ **Photorealistic results**: High-quality, realistic images suitable for a variety of creative uses.
+- 🎨 **Deep customization**: Each transformation can be tailored to match your unique vision.
 
-# e2e tests
-$ pnpm run test:e2e
+---
 
-# test coverage
-$ pnpm run test:cov
-```
+🌟 **Try it now** and transform your photos into captivating artworks with Transvers.
 
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
