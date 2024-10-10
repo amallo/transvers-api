@@ -1,6 +1,6 @@
 import {Readable} from 'stream'
 import { DateService } from '../services/date.service'
-export const makeApocalyptise = ({dateService} : {dateService: DateService})=>({input} : {input: Readable})=>{
+export const makeApocalyptize = ({dateService} : {dateService: DateService})=>({input} : {input: Readable})=>{
     return Promise.resolve({
         at: dateService.nowIs().toISOString(),
         by: 'audie',
