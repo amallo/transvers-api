@@ -6,10 +6,13 @@ beforeEach(() => {
   fixture = new ApocalytizeFixture();
 });
 it('prepare to apocalyptize a picture', async () => {
-  fixture.givenNewJobId('job-id-0');
   fixture.givenNewPictureId('input-image-0');
   fixture.givenNewNotificationId('notification-id-0');
-  await fixture.whenApocalyptizePicture(new Stream.Readable(), 'audie');
+  await fixture.whenStartingApocalyptizePicture(
+    new Stream.Readable(),
+    'audie',
+    'job-id-0',
+  );
   fixture.expectLastPictureToEqual({
     id: 'input-image-0',
     owner: 'audie',

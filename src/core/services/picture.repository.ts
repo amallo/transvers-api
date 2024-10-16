@@ -1,12 +1,12 @@
-import { Readable } from "stream";
-import { PicturePath } from "./picture-path";
+import {  Stream } from 'stream';
+import { PicturePath } from './picture-path';
 
 type SaveParams = {
-    id: string,
-    picture: Readable,
-    owner: string,
-    path: PicturePath
-}
-export interface PictureRepository{
-    save(params: SaveParams): Promise<void>
+  id: string;
+  picture: Stream;
+  owner: string;
+  path: PicturePath;
+};
+export interface PictureRepository {
+  save(params: SaveParams): Promise<void>;
 }

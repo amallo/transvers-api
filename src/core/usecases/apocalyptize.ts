@@ -1,4 +1,4 @@
-import { Readable } from 'stream';
+import {  Stream } from 'stream';
 import { DateService } from '../services/date.service';
 import { JobRepository } from '../services/job.repository';
 import { IdGenerator } from '../services/id.generator';
@@ -10,7 +10,6 @@ import { Notifier } from '../services/notifier';
 type Dependencies = {
   dateService: DateService;
   jobRepository: JobRepository;
-  jobIdGenerator: IdGenerator;
   pictureRepository: PictureRepository;
   pictureIdGenerator: IdGenerator;
   notifier: Notifier;
@@ -23,9 +22,8 @@ export class ApocalyptizeCommandHandler {
   ) {
     this.dispatcher.registerHandler(ApocalyptizeCommand, this);
   }
-  async handle({ by, input }: ApocalyptizeCommand) {
+  async handle({ by, input, jobId }: ApocalyptizeCommand) {
     const {
-      jobIdGenerator,
       pictureIdGenerator,
       pictureRepository,
       jobRepository,
@@ -34,7 +32,6 @@ export class ApocalyptizeCommandHandler {
       notificationIdGenerator,
     } = this.dependencies;
     const now = dateService.nowIs();
-    const willCreateJobId = jobIdGenerator.generate();
     const willSavePictureId = pictureIdGenerator.generate();
     const picturePath = new PicturePath({
       owner: by,
@@ -47,7 +44,7 @@ export class ApocalyptizeCommandHandler {
       path: picturePath,
     });
     const job = await jobRepository.run({
-      id: willCreateJobId,
+      id: jobId,
       by,
       name: 'apocalyptize',
     });
@@ -65,7 +62,8 @@ export class ApocalyptizeCommandHandler {
 
 export class ApocalyptizeCommand {
   constructor(
-    public input: Readable,
-    public by: string,
+    public readonly input: Stream,
+    public readonly by: string,
+    public readonly jobId: string,
   ) {}
 }
