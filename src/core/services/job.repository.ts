@@ -1,6 +1,6 @@
-import { Job } from "../models/job.model";
+import { Job } from '../models/job.model';
 
 export interface JobRepository {
-    getBy(identifier: string): Promise<Job | null>
-    run({forUser, inputImageId} : {id: string, forUser: string, inputImageId: string}): Promise<Job>
+  getBy(identifier: string): Promise<Job | null>;
+  run({ by, name }: { id: string; by: string; name: string }): Promise<Job>;
 }

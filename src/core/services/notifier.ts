@@ -1,8 +1,8 @@
-import { JobNotification } from "../models/job-notification.model";
+import { Notification } from '../models/notification.model';
 
 /**
  * Handles the notification of a job
  */
 export interface Notifier {
-    notifySuccess(notification: JobNotification): Promise<void>
+  notify(notification: Notification): void;
 }

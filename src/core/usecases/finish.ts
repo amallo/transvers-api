@@ -1,4 +1,4 @@
-import { JobNotification } from "../models/job-notification.model";
+import { JobNotification } from "../models/notification.model";
 import { FileDownloader } from "../services/file.downloader";
 import { IdGenerator } from "../services/id.generator";
 import { JobRepository } from "../services/job.repository";
