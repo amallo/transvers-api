@@ -1,11 +1,12 @@
-import {  Stream } from 'stream';
+import { Stream } from 'stream';
 import { DateService } from '../services/date.service';
 import { JobRepository } from '../services/job.repository';
 import { IdGenerator } from '../services/id.generator';
 import { PictureRepository } from '../services/picture.repository';
-import { PicturePath } from '../services/picture-path';
 import { Dispatcher } from '../dispatchers/dispatcher';
 import { Notifier } from '../services/notifier';
+import { PicturePath } from '../services/picture-path';
+import { HttpClient } from '../services/http.client';
 
 type Dependencies = {
   dateService: DateService;
@@ -14,56 +15,57 @@ type Dependencies = {
   pictureIdGenerator: IdGenerator;
   notifier: Notifier;
   notificationIdGenerator: IdGenerator;
+  httpClient: HttpClient;
 };
-export class ApocalyptizeCommandHandler {
+export class FinishApocalyptizeCommandHandler {
   constructor(
     private dispatcher: Dispatcher,
     private dependencies: Dependencies,
   ) {
-    this.dispatcher.registerHandler(ApocalyptizeCommand, this);
+    this.dispatcher.registerHandler(FinishApocalyptizeCommand, this);
   }
-  async handle({ by, input, jobId }: ApocalyptizeCommand) {
+  async handle({ output, jobId }: FinishApocalyptizeCommand) {
     const {
+      jobRepository,
+      httpClient,
       pictureIdGenerator,
       pictureRepository,
-      jobRepository,
       dateService,
       notifier,
       notificationIdGenerator,
     } = this.dependencies;
-    const now = dateService.nowIs();
-    const willSavePictureId = pictureIdGenerator.generate();
-    const picturePath = new PicturePath({
-      owner: by,
-      pictureId: willSavePictureId,
+    const job = await jobRepository.getById(jobId);
+
+    const newOutputPictureId = pictureIdGenerator.generate();
+    const outputPath = new PicturePath({
+      owner: job.by,
+      pictureId: newOutputPictureId,
     });
+    const outputStream = await httpClient.downloadAsStream(output);
     await pictureRepository.save({
-      id: willSavePictureId,
-      picture: input,
-      owner: by,
-      path: picturePath,
+      id: newOutputPictureId,
+      picture: outputStream,
+      owner: job.by,
+      path: outputPath,
     });
-    const job = await jobRepository.run({
-      id: jobId,
-      by,
-      name: 'apocalyptize',
-    });
+    await jobRepository.finish(jobId, outputPath);
+    const now = dateService.nowIs();
     const willCreateNotificationId = notificationIdGenerator.generate();
     notifier.notify({
       type: 'job',
-      to: by,
+      to: job.by,
       id: willCreateNotificationId,
       jobId: job.id,
-      status: 'running',
+      status: 'done',
       at: now.toISOString(),
+      output: outputPath.path(),
     });
   }
 }
 
-export class ApocalyptizeCommand {
+export class FinishApocalyptizeCommand {
   constructor(
-    public readonly input: Stream,
-    public readonly by: string,
+    public readonly output: string,
     public readonly jobId: string,
   ) {}
 }

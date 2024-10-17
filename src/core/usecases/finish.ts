@@ -16,7 +16,7 @@ type Dependencies = {
 }
 export const finish = ({ notifier, jobRepository, notificationIdGenerator, pictureIdGenerator, fileDownloader, pictureRepository }: Dependencies) =>
     async ({id, status, outputUrl}: {id: string, status: string, outputUrl: string})=> {
-        const job = await jobRepository.getBy(id)
+        const job = await jobRepository.getById(id)
         const willGeneratePictureId = pictureIdGenerator.generate()
         const outputPath = new PicturePath({owner: job.userId, pictureId: willGeneratePictureId})
         const stream = await fileDownloader.download(outputUrl, outputPath)

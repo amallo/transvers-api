@@ -1,8 +1,20 @@
-export interface Notification {
+export type Notification = StartJobNotification | DoneJobNotification;
+
+type StartJobNotification = {
   id: string;
   type: 'job';
   to: string;
   jobId: string;
-  status: string;
+  status: 'running';
   at: string;
-}
+};
+
+type DoneJobNotification = {
+  id: string;
+  type: 'job';
+  to: string;
+  jobId: string;
+  status: 'done';
+  at: string;
+  output: string;
+};

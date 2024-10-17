@@ -5,12 +5,18 @@ import { FakeJobRepository } from '../services/adapters/fake-job.repository';
 import { FakeNotifier } from '../services/adapters/fake-notifier';
 import { FakePictureRepository } from '../services/adapters/fake-picture.repository';
 import {
-  ApocalyptizeCommand,
-  ApocalyptizeCommandHandler,
-} from '../usecases/apocalyptize';
+  StartApocalyptizeCommand,
+  StartApocalyptizeCommandHandler,
+} from '../usecases/start-apocalyptize';
 import { Picture } from '../models/picture.model';
 import { Notification } from '../models/notification.model';
 import { Stream } from 'stream';
+import { Job } from '../models/job.model';
+import {
+  FinishApocalyptizeCommand,
+  FinishApocalyptizeCommandHandler,
+} from '../usecases/finish-apocalyptize';
+import { FakeHttpClient } from '../services/adapters/fake-http.client';
 
 export class ApocalytizeFixture {
   dateService: FakeDateService;
@@ -20,6 +26,7 @@ export class ApocalytizeFixture {
   pictureIdGenerator: FakeIdGenerator;
   commandDispatcher: FakeDispatcher;
   notifier: FakeNotifier;
+  httpClient: FakeHttpClient;
   constructor() {
     this.dateService = new FakeDateService(
       new Date('2011-10-05T14:48:00.000Z'),
@@ -30,13 +37,23 @@ export class ApocalytizeFixture {
     this.commandDispatcher = new FakeDispatcher();
     this.notifier = new FakeNotifier();
     this.notificationIdGenerator = new FakeIdGenerator();
-    new ApocalyptizeCommandHandler(this.commandDispatcher, {
-      notificationIdGenerator: this.notificationIdGenerator,
-      notifier: this.notifier,
+    this.httpClient = new FakeHttpClient();
+    new StartApocalyptizeCommandHandler(this.commandDispatcher, {
       dateService: this.dateService,
       jobRepository: this.jobRepository,
       pictureRepository: this.pictureRepository,
       pictureIdGenerator: this.pictureIdGenerator,
+      notifier: this.notifier,
+      notificationIdGenerator: this.notificationIdGenerator,
+    });
+    new FinishApocalyptizeCommandHandler(this.commandDispatcher, {
+      dateService: this.dateService,
+      jobRepository: this.jobRepository,
+      pictureRepository: this.pictureRepository,
+      pictureIdGenerator: this.pictureIdGenerator,
+      notifier: this.notifier,
+      notificationIdGenerator: this.notificationIdGenerator,
+      httpClient: this.httpClient,
     });
   }
   givenNewPictureId(id: string) {
@@ -45,19 +62,36 @@ export class ApocalytizeFixture {
   givenNewNotificationId(id: string) {
     this.notificationIdGenerator.willGenerate(id);
   }
+  givenJob(job: Job) {
+    this.jobRepository.withJob(job);
+  }
   whenStartingApocalyptizePicture(
     pictureStream: Stream,
     user: string,
     jobId: string,
   ) {
     return this.commandDispatcher.dispatch(
-      new ApocalyptizeCommand(pictureStream, user, jobId),
+      new StartApocalyptizeCommand(pictureStream, user, jobId),
+    );
+  }
+  whenFinishingApocalyptizePicture({
+    jobId,
+    output,
+  }: {
+    jobId: string;
+    output: string;
+  }) {
+    return this.commandDispatcher.dispatch(
+      new FinishApocalyptizeCommand(output, jobId),
     );
   }
   expectLastPictureToEqual(expected: Picture) {
     expect(this.pictureRepository.last()).toEqual(expected);
   }
-  expectLastNotificationToEqual(expected: Notification) {
+  expectLastSentNotificationToEqual(expected: Notification) {
     expect(this.notifier.last()).toEqual(expected);
+  }
+  expectLastJobToEqual(expected: Job) {
+    expect(this.jobRepository.last()).toEqual(expected);
   }
 }

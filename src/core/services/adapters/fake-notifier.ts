@@ -4,7 +4,6 @@ import { Notifier } from '../notifier';
 export class FakeNotifier implements Notifier {
   private notifications: Notification[] = [];
   async notify(notification: Notification) {
-    console.log(`job ${notification.id} done!`);
     this.notifications.push(notification);
   }
   last() {
