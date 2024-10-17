@@ -14,4 +14,5 @@ export interface JobRepository {
     input: string;
   }): Promise<Job>;
   finish(jobId: string, outputPath: PicturePath): Promise<void>;
+  fail(jobId: string, error: Error): Promise<void>;
 }

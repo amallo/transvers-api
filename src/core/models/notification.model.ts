@@ -1,4 +1,7 @@
-export type Notification = StartJobNotification | DoneJobNotification;
+export type Notification =
+  | StartJobNotification
+  | DoneJobNotification
+  | FailureJobNotification;
 
 type StartJobNotification = {
   id: string;
@@ -17,4 +20,13 @@ type DoneJobNotification = {
   status: 'done';
   at: string;
   output: string;
+};
+
+type FailureJobNotification = {
+  id: string;
+  type: 'job';
+  to: string;
+  jobId: string;
+  status: 'failure';
+  at: string;
 };

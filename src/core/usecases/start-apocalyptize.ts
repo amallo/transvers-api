@@ -1,20 +1,7 @@
 import { Stream } from 'stream';
-import { DateService } from '../services/date.service';
-import { JobRepository } from '../services/job.repository';
-import { IdGenerator } from '../services/id.generator';
-import { PictureRepository } from '../services/picture.repository';
 import { PicturePath } from '../services/picture-path';
-import { Dispatcher } from '../dispatchers/dispatcher';
-import { Notifier } from '../services/notifier';
+import { Dependencies } from '../dependencies';
 
-type Dependencies = {
-  dateService: DateService;
-  jobRepository: JobRepository;
-  pictureRepository: PictureRepository;
-  pictureIdGenerator: IdGenerator;
-  notifier: Notifier;
-  notificationIdGenerator: IdGenerator;
-};
 export class StartApocalyptizeCommandHandler {
   constructor(private dependencies: Dependencies) {}
   async handle({ by, input, jobId }: StartApocalyptizeCommand) {
@@ -28,15 +15,10 @@ export class StartApocalyptizeCommandHandler {
     } = this.dependencies;
     const now = dateService.nowIs();
     const willSavePictureId = pictureIdGenerator.generate();
+    const willCreateNotificationId = notificationIdGenerator.generate();
     const picturePath = new PicturePath({
       owner: by,
       pictureId: willSavePictureId,
-    });
-    await pictureRepository.save({
-      id: willSavePictureId,
-      picture: input,
-      owner: by,
-      path: picturePath,
     });
     const job = await jobRepository.run({
       id: jobId,
@@ -44,15 +26,33 @@ export class StartApocalyptizeCommandHandler {
       name: 'apocalyptize',
       input: willSavePictureId,
     });
-    const willCreateNotificationId = notificationIdGenerator.generate();
-    notifier.notify({
-      type: 'job',
-      to: by,
-      id: willCreateNotificationId,
-      jobId: job.id,
-      status: 'running',
-      at: now.toISOString(),
-    });
+    try {
+      await pictureRepository.save({
+        id: willSavePictureId,
+        picture: input,
+        owner: by,
+        path: picturePath,
+      });
+
+      notifier.notify({
+        type: 'job',
+        to: by,
+        id: willCreateNotificationId,
+        jobId: job.id,
+        status: 'running',
+        at: now.toISOString(),
+      });
+    } catch (e) {
+      await jobRepository.fail(jobId, e);
+      notifier.notify({
+        type: 'job',
+        to: job.by,
+        id: willCreateNotificationId,
+        jobId: job.id,
+        status: 'failure',
+        at: now.toISOString(),
+      });
+    }
   }
 }
 

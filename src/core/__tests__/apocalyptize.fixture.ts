@@ -17,6 +17,8 @@ import {
   FinishApocalyptizeCommandHandler,
 } from '../usecases/finish-apocalyptize';
 import { FakeHttpClient } from '../services/adapters/fake-http.client';
+import { FailurePictureRepository } from '../services/adapters/failure-picture.repository';
+import { Dependencies, DependenciesFactory } from '../dependencies';
 
 export class ApocalytizeFixture {
   dateService: FakeDateService;
@@ -27,6 +29,7 @@ export class ApocalytizeFixture {
   commandDispatcher: FakeDispatcher;
   notifier: FakeNotifier;
   httpClient: FakeHttpClient;
+  dependencies: Dependencies;
   startApocalyptizeCommandHandler: StartApocalyptizeCommandHandler;
   finishApocalyptizeCommandHandler: FinishApocalyptizeCommandHandler;
   constructor() {
@@ -40,24 +43,22 @@ export class ApocalytizeFixture {
     this.notifier = new FakeNotifier();
     this.notificationIdGenerator = new FakeIdGenerator();
     this.httpClient = new FakeHttpClient();
-    this.startApocalyptizeCommandHandler = new StartApocalyptizeCommandHandler({
+
+    this.dependencies = DependenciesFactory.forTest({
       dateService: this.dateService,
       jobRepository: this.jobRepository,
       pictureRepository: this.pictureRepository,
       pictureIdGenerator: this.pictureIdGenerator,
       notifier: this.notifier,
       notificationIdGenerator: this.notificationIdGenerator,
+      httpClient: this.httpClient,
+      commandDispatcher: this.commandDispatcher,
     });
+    this.startApocalyptizeCommandHandler = new StartApocalyptizeCommandHandler(
+      this.dependencies,
+    );
     this.finishApocalyptizeCommandHandler =
-      new FinishApocalyptizeCommandHandler({
-        dateService: this.dateService,
-        jobRepository: this.jobRepository,
-        pictureRepository: this.pictureRepository,
-        pictureIdGenerator: this.pictureIdGenerator,
-        notifier: this.notifier,
-        notificationIdGenerator: this.notificationIdGenerator,
-        httpClient: this.httpClient,
-      });
+      new FinishApocalyptizeCommandHandler(this.dependencies);
     this.commandDispatcher.registerHandler(
       FinishApocalyptizeCommand,
       this.finishApocalyptizeCommandHandler,
@@ -81,6 +82,18 @@ export class ApocalytizeFixture {
     user: string,
     jobId: string,
   ) {
+    return this.commandDispatcher.dispatch(
+      new StartApocalyptizeCommand(pictureStream, user, jobId),
+    );
+  }
+  whenStartingApocalyptizePictureWithSavingPictureFailure(
+    pictureStream: Stream,
+    user: string,
+    jobId: string,
+    error: Error,
+  ) {
+    const failurePictureRepository = new FailurePictureRepository(error);
+    this.dependencies.pictureRepository = failurePictureRepository;
     return this.commandDispatcher.dispatch(
       new StartApocalyptizeCommand(pictureStream, user, jobId),
     );

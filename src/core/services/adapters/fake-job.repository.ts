@@ -1,4 +1,4 @@
-import { EndJob, Job } from 'src/core/models/job.model';
+import { EndJobWithFailure, EndJobWithSuccess, Job } from 'src/core/models/job.model';
 import { JobRepository } from '../job.repository';
 import { PicturePath } from '../picture-path';
 
@@ -32,10 +32,15 @@ export class FakeJobRepository implements JobRepository {
   }
 
   async finish(jobId: string, outputPath: PicturePath): Promise<void> {
-    const job = (await this.getById(jobId)) as EndJob;
+    const job = (await this.getById(jobId)) as EndJobWithSuccess;
     job.status = 'done';
     job.output = outputPath.pictureId();
     return Promise.resolve();
+  }
+  async fail(jobId: string, error: Error): Promise<void> {
+    const job = (await this.getById(jobId)) as EndJobWithFailure;
+    job.status = 'failure';
+    job.error = error.message;
   }
 
   withJob(job: Job) {

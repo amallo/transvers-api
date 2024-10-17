@@ -1,5 +1,4 @@
-
-export type Job = StartJob | EndJob;
+export type Job = StartJob | EndJobWithSuccess | EndJobWithFailure;
 type StartJob = {
   id: string;
   by: string;
@@ -8,11 +7,20 @@ type StartJob = {
   input: string;
 };
 
-export type EndJob = {
+export type EndJobWithSuccess = {
   id: string;
   by: string;
   status: 'done';
   name: string;
   input: string;
   output: string;
+};
+
+export type EndJobWithFailure = {
+  id: string;
+  by: string;
+  status: 'failure';
+  name: string;
+  input: string;
+  error: string;
 };

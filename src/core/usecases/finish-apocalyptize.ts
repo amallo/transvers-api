@@ -1,22 +1,6 @@
-import { Stream } from 'stream';
-import { DateService } from '../services/date.service';
-import { JobRepository } from '../services/job.repository';
-import { IdGenerator } from '../services/id.generator';
-import { PictureRepository } from '../services/picture.repository';
-import { Dispatcher } from '../dispatchers/dispatcher';
-import { Notifier } from '../services/notifier';
 import { PicturePath } from '../services/picture-path';
-import { HttpClient } from '../services/http.client';
+import { Dependencies } from '../dependencies';
 
-type Dependencies = {
-  dateService: DateService;
-  jobRepository: JobRepository;
-  pictureRepository: PictureRepository;
-  pictureIdGenerator: IdGenerator;
-  notifier: Notifier;
-  notificationIdGenerator: IdGenerator;
-  httpClient: HttpClient;
-};
 export class FinishApocalyptizeCommandHandler {
   constructor(private dependencies: Dependencies) {}
   async handle({ output, jobId }: FinishApocalyptizeCommand) {
@@ -29,31 +13,42 @@ export class FinishApocalyptizeCommandHandler {
       notifier,
       notificationIdGenerator,
     } = this.dependencies;
-    const job = await jobRepository.getById(jobId);
+    const now = dateService.nowIs();
     const newOutputPictureId = pictureIdGenerator.generate();
+    const job = await jobRepository.getById(jobId);
     const outputPath = new PicturePath({
       owner: job.by,
       pictureId: newOutputPictureId,
     });
-    const outputStream = await httpClient.downloadAsStream(output);
-    await pictureRepository.save({
-      id: newOutputPictureId,
-      picture: outputStream,
-      owner: job.by,
-      path: outputPath,
-    });
-    await jobRepository.finish(jobId, outputPath);
-    const now = dateService.nowIs();
     const willCreateNotificationId = notificationIdGenerator.generate();
-    notifier.notify({
-      type: 'job',
-      to: job.by,
-      id: willCreateNotificationId,
-      jobId: job.id,
-      status: 'done',
-      at: now.toISOString(),
-      output: outputPath.path(),
-    });
+    try {
+      const outputStream = await httpClient.downloadAsStream(output);
+      await pictureRepository.save({
+        id: newOutputPictureId,
+        picture: outputStream,
+        owner: job.by,
+        path: outputPath,
+      });
+      await jobRepository.finish(jobId, outputPath);
+      notifier.notify({
+        type: 'job',
+        to: job.by,
+        id: willCreateNotificationId,
+        jobId: job.id,
+        status: 'done',
+        at: now.toISOString(),
+        output: outputPath.path(),
+      });
+    } catch (_) {
+      notifier.notify({
+        type: 'job',
+        to: job.by,
+        id: willCreateNotificationId,
+        jobId: job.id,
+        status: 'failure',
+        at: now.toISOString(),
+      });
+    }
   }
 }
 
