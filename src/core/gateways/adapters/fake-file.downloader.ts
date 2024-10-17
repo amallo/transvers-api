@@ -1,6 +1,6 @@
 import { Readable, Stream } from 'stream';
 import { FileDownloader } from '../file.downloader';
-import { PicturePath } from '../picture-path';
+import { PicturePath } from '../../models/picture-path';
 
 async function* generate() {
   yield 'hello';

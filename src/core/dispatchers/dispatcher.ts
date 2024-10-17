@@ -1,3 +1,3 @@
 export interface Dispatcher {
-  dispatch(event: any): Promise<void>;
+  dispatch<E>(event: E): Promise<void>;
 }

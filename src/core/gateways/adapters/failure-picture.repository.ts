@@ -1,10 +1,9 @@
-import { Readable } from 'stream';
 import { PictureRepository } from '../picture.repository';
-import { PicturePath } from '../picture-path';
+import { PictureProperties } from 'src/core/models/picture.model';
 
 export class FailurePictureRepository implements PictureRepository {
   constructor(private savingFulure: Error) {}
-  save(_: { id: string; picture: Readable; owner: string; path: PicturePath }) {
+  save(_: PictureProperties) {
     return Promise.reject(this.savingFulure);
   }
 }

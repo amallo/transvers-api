@@ -1,64 +1,45 @@
 import { Stream } from 'stream';
-import { PicturePath } from '../services/picture-path';
 import { Dependencies } from '../dependencies';
+import { Handler } from '../handlers/handler';
+import { JobModel } from '../models/job.model';
+import { PictureModel } from '../models/picture.model';
 
-export class StartApocalyptizeCommandHandler {
+export class StartApocalyptizeCommandHandler
+  implements Handler<StartApocalyptizeCommand>
+{
   constructor(private dependencies: Dependencies) {}
-  async handle({ by, input, jobId }: StartApocalyptizeCommand) {
+  async handle({ by, jobId }: StartApocalyptizeCommand) {
     const {
       pictureIdGenerator,
       pictureRepository,
       jobRepository,
+      eventBus,
       dateService,
-      notifier,
-      notificationIdGenerator,
     } = this.dependencies;
-    const now = dateService.nowIs();
     const willSavePictureId = pictureIdGenerator.generate();
-    const willCreateNotificationId = notificationIdGenerator.generate();
-    const picturePath = new PicturePath({
-      owner: by,
-      pictureId: willSavePictureId,
-    });
-    const job = await jobRepository.run({
+    const now = dateService.nowIs();
+    const job = JobModel.createPendingJob(eventBus, {
       id: jobId,
       by,
       name: 'apocalyptize',
-      input: willSavePictureId,
     });
+    const inputPicture = new PictureModel(willSavePictureId, job.by);
     try {
-      await pictureRepository.save({
-        id: willSavePictureId,
-        picture: input,
-        owner: by,
-        path: picturePath,
-      });
-
-      notifier.notify({
-        type: 'job',
-        to: by,
-        id: willCreateNotificationId,
-        jobId: job.id,
-        status: 'running',
-        at: now.toISOString(),
-      });
+      await pictureRepository.save(inputPicture);
+      job.start(now.toISOString(), inputPicture);
+      await jobRepository.save(job);
+      job.commit();
     } catch (e) {
-      await jobRepository.fail(jobId, e);
-      notifier.notify({
-        type: 'job',
-        to: job.by,
-        id: willCreateNotificationId,
-        jobId: job.id,
-        status: 'failure',
-        at: now.toISOString(),
-      });
+      job.fail(e);
+      await jobRepository.save(job);
+      job.commit();
     }
   }
 }
 
 export class StartApocalyptizeCommand {
   constructor(
-    public readonly input: Stream,
+    public readonly inputStream: Stream,
     public readonly by: string,
     public readonly jobId: string,
   ) {}

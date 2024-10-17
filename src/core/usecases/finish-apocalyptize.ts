@@ -1,5 +1,6 @@
-import { PicturePath } from '../services/picture-path';
+
 import { Dependencies } from '../dependencies';
+import { PictureModel } from '../models/picture.model';
 
 export class FinishApocalyptizeCommandHandler {
   constructor(private dependencies: Dependencies) {}
@@ -16,20 +17,14 @@ export class FinishApocalyptizeCommandHandler {
     const now = dateService.nowIs();
     const newOutputPictureId = pictureIdGenerator.generate();
     const job = await jobRepository.getById(jobId);
-    const outputPath = new PicturePath({
-      owner: job.by,
-      pictureId: newOutputPictureId,
-    });
     const willCreateNotificationId = notificationIdGenerator.generate();
     try {
       const outputStream = await httpClient.downloadAsStream(output);
-      await pictureRepository.save({
-        id: newOutputPictureId,
-        picture: outputStream,
-        owner: job.by,
-        path: outputPath,
-      });
-      await jobRepository.finish(jobId, outputPath);
+      const ouputPicture = new PictureModel(newOutputPictureId, job.by);
+      await pictureRepository.save(ouputPicture);
+      job.done(now.toISOString(), ouputPicture);
+      await jobRepository.save(job);
+      job.commit();
       notifier.notify({
         type: 'job',
         to: job.by,
@@ -37,7 +32,7 @@ export class FinishApocalyptizeCommandHandler {
         jobId: job.id,
         status: 'done',
         at: now.toISOString(),
-        output: outputPath.path(),
+        output: ouputPicture.path,
       });
     } catch (_) {
       notifier.notify({

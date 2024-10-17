@@ -1,17 +1,19 @@
 import { FakeDispatcher } from './dispatchers/adapters/fake.dispatcher';
 import { Dispatcher } from './dispatchers/dispatcher';
-import { FakeDateService } from './services/adapters/fake-date.service';
-import { FakeHttpClient } from './services/adapters/fake-http.client';
-import { FakeIdGenerator } from './services/adapters/fake-id.generator';
-import { FakeJobRepository } from './services/adapters/fake-job.repository';
-import { FakeNotifier } from './services/adapters/fake-notifier';
-import { FakePictureRepository } from './services/adapters/fake-picture.repository';
-import { DateService } from './services/date.service';
-import { HttpClient } from './services/http.client';
-import { IdGenerator } from './services/id.generator';
-import { JobRepository } from './services/job.repository';
-import { Notifier } from './services/notifier';
-import { PictureRepository } from './services/picture.repository';
+import { FakeBus } from './events/adapters/fake.bus';
+import { Bus } from './events/bus';
+import { FakeDateService } from './gateways/adapters/fake-date.service';
+import { FakeHttpClient } from './gateways/adapters/fake-http.client';
+import { FakeIdGenerator } from './gateways/adapters/fake-id.generator';
+import { FakeJobRepository } from './gateways/adapters/fake-job.repository';
+import { FakeNotifier } from './gateways/adapters/fake-notifier';
+import { FakePictureRepository } from './gateways/adapters/fake-picture.repository';
+import { DateService } from './gateways/date.service';
+import { HttpClient } from './gateways/http.client';
+import { IdGenerator } from './gateways/id.generator';
+import { JobRepository } from './gateways/job.repository';
+import { Notifier } from './gateways/notifier';
+import { PictureRepository } from './gateways/picture.repository';
 
 export type Dependencies = {
   dateService: DateService;
@@ -21,7 +23,7 @@ export type Dependencies = {
   notifier: Notifier;
   notificationIdGenerator: IdGenerator;
   httpClient: HttpClient;
-  commandDispatcher: Dispatcher;
+  eventBus: Bus;
 };
 
 const defaultTestDependencies: Dependencies = {
@@ -32,38 +34,15 @@ const defaultTestDependencies: Dependencies = {
   notifier: new FakeNotifier(),
   notificationIdGenerator: new FakeIdGenerator(),
   httpClient: new FakeHttpClient(),
-  commandDispatcher: new FakeDispatcher(),
+  eventBus: new FakeBus(),
 };
 export class DependenciesFactory {
   static forTest(
     deps: Partial<Dependencies> = defaultTestDependencies,
   ): Dependencies {
     return {
-      dateService: new FakeDateService(new Date('2011-10-05T14:48:00.000Z')),
-      jobRepository: new FakeJobRepository(),
-      pictureRepository: new FakePictureRepository(),
-      pictureIdGenerator: new FakeIdGenerator(),
-      notifier: new FakeNotifier(),
-      notificationIdGenerator: new FakeIdGenerator(),
-      httpClient: new FakeHttpClient(),
-      commandDispatcher: new FakeDispatcher(),
+      ...defaultTestDependencies,
       ...deps,
     };
   }
 }
-
-export const dependencies = () => {
-  return {
-    test: (deps: Partial<Dependencies>): Dependencies => ({
-      dateService: new FakeDateService(new Date('2011-10-05T14:48:00.000Z')),
-      jobRepository: new FakeJobRepository(),
-      notificationIdGenerator: new FakeIdGenerator(),
-      pictureRepository: new FakePictureRepository(),
-      pictureIdGenerator: new FakeIdGenerator(),
-      commandDispatcher: new FakeDispatcher(),
-      notifier: new FakeNotifier(),
-      httpClient: new FakeHttpClient(),
-      ...deps,
-    }),
-  };
-};
