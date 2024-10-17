@@ -1,4 +1,4 @@
-import {  Stream } from 'stream';
+import { Stream } from 'stream';
 import { DateService } from '../services/date.service';
 import { JobRepository } from '../services/job.repository';
 import { IdGenerator } from '../services/id.generator';
@@ -16,12 +16,7 @@ type Dependencies = {
   notificationIdGenerator: IdGenerator;
 };
 export class StartApocalyptizeCommandHandler {
-  constructor(
-    private dispatcher: Dispatcher,
-    private dependencies: Dependencies,
-  ) {
-    this.dispatcher.registerHandler(StartApocalyptizeCommand, this);
-  }
+  constructor(private dependencies: Dependencies) {}
   async handle({ by, input, jobId }: StartApocalyptizeCommand) {
     const {
       pictureIdGenerator,

@@ -18,12 +18,7 @@ type Dependencies = {
   httpClient: HttpClient;
 };
 export class FinishApocalyptizeCommandHandler {
-  constructor(
-    private dispatcher: Dispatcher,
-    private dependencies: Dependencies,
-  ) {
-    this.dispatcher.registerHandler(FinishApocalyptizeCommand, this);
-  }
+  constructor(private dependencies: Dependencies) {}
   async handle({ output, jobId }: FinishApocalyptizeCommand) {
     const {
       jobRepository,
@@ -35,7 +30,6 @@ export class FinishApocalyptizeCommandHandler {
       notificationIdGenerator,
     } = this.dependencies;
     const job = await jobRepository.getById(jobId);
-
     const newOutputPictureId = pictureIdGenerator.generate();
     const outputPath = new PicturePath({
       owner: job.by,

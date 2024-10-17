@@ -27,6 +27,8 @@ export class ApocalytizeFixture {
   commandDispatcher: FakeDispatcher;
   notifier: FakeNotifier;
   httpClient: FakeHttpClient;
+  startApocalyptizeCommandHandler: StartApocalyptizeCommandHandler;
+  finishApocalyptizeCommandHandler: FinishApocalyptizeCommandHandler;
   constructor() {
     this.dateService = new FakeDateService(
       new Date('2011-10-05T14:48:00.000Z'),
@@ -38,7 +40,7 @@ export class ApocalytizeFixture {
     this.notifier = new FakeNotifier();
     this.notificationIdGenerator = new FakeIdGenerator();
     this.httpClient = new FakeHttpClient();
-    new StartApocalyptizeCommandHandler(this.commandDispatcher, {
+    this.startApocalyptizeCommandHandler = new StartApocalyptizeCommandHandler({
       dateService: this.dateService,
       jobRepository: this.jobRepository,
       pictureRepository: this.pictureRepository,
@@ -46,15 +48,24 @@ export class ApocalytizeFixture {
       notifier: this.notifier,
       notificationIdGenerator: this.notificationIdGenerator,
     });
-    new FinishApocalyptizeCommandHandler(this.commandDispatcher, {
-      dateService: this.dateService,
-      jobRepository: this.jobRepository,
-      pictureRepository: this.pictureRepository,
-      pictureIdGenerator: this.pictureIdGenerator,
-      notifier: this.notifier,
-      notificationIdGenerator: this.notificationIdGenerator,
-      httpClient: this.httpClient,
-    });
+    this.finishApocalyptizeCommandHandler =
+      new FinishApocalyptizeCommandHandler({
+        dateService: this.dateService,
+        jobRepository: this.jobRepository,
+        pictureRepository: this.pictureRepository,
+        pictureIdGenerator: this.pictureIdGenerator,
+        notifier: this.notifier,
+        notificationIdGenerator: this.notificationIdGenerator,
+        httpClient: this.httpClient,
+      });
+    this.commandDispatcher.registerHandler(
+      FinishApocalyptizeCommand,
+      this.finishApocalyptizeCommandHandler,
+    );
+    this.commandDispatcher.registerHandler(
+      StartApocalyptizeCommand,
+      this.startApocalyptizeCommandHandler,
+    );
   }
   givenNewPictureId(id: string) {
     this.pictureIdGenerator.willGenerate(id);
