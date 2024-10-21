@@ -1,25 +1,22 @@
 import { Bus } from '../events/bus';
-import { JobFailedEvent } from '../events/job-failed.event';
-import { JobStartedEvent } from '../events/job-started.event';
+import { JobTaskResult } from '../gateways/job.task';
 import { PictureModel } from './picture.model';
 
 export interface JobProperties {
   id: string;
   by: string;
-  status: 'pending' | 'running' | 'done' | 'failure';
+  status: JobStatus;
   name: string;
   inputPicture?: PictureModel;
-  startedAt: string;
+  startedAt?: string;
   error?: string;
   outputPicture?: PictureModel;
 }
-type JobStatus = 'pending' | 'running' | 'done' | 'failure';
+type JobStatus = 'pending' | 'running' | 'step' | 'done' | 'failure';
 export class JobModel {
   private _error: string;
-  private _events: unknown[] = [];
 
   constructor(
-    private readonly _eventBus: Bus,
     private readonly _id: string,
     private readonly _by: string,
     private readonly _name: string,
@@ -29,16 +26,12 @@ export class JobModel {
     private _outputPicture?: PictureModel,
   ) {}
 
-  static createPendingJob(
-    eventBus: Bus,
-    properties: {
-      id: string;
-      by: string;
-      name: string;
-    },
-  ) {
+  static createPendingJob(properties: {
+    id: string;
+    by: string;
+    name: string;
+  }) {
     const job = new JobModel(
-      eventBus,
       properties.id,
       properties.by,
       properties.name,
@@ -58,7 +51,6 @@ export class JobModel {
     },
   ) {
     const job = new JobModel(
-      eventBus,
       properties.id,
       properties.by,
       properties.name,
@@ -69,19 +61,15 @@ export class JobModel {
     return job;
   }
 
-  static createDoneJob(
-    eventBus: Bus,
-    properties: {
-      id: string;
-      by: string;
-      name: string;
-      startedAt: string;
-      inputPictureId: string;
-      outputPictureId: string;
-    },
-  ) {
+  static createDoneJob(properties: {
+    id: string;
+    by: string;
+    name: string;
+    startedAt: string;
+    inputPictureId: string;
+    outputPictureId: string;
+  }) {
     const job = new JobModel(
-      eventBus,
       properties.id,
       properties.by,
       properties.name,
@@ -97,7 +85,6 @@ export class JobModel {
     this._status = 'running';
     this._startedAt = at;
     this._inputPicture = inputPicture;
-    this._events.push(new JobStartedEvent(this._id, this._by));
   }
   done(at: string, outputPicture: PictureModel) {
     this._status = 'done';
@@ -106,7 +93,6 @@ export class JobModel {
   fail(error: Error) {
     this._status = 'failure';
     this._error = error.message;
-    this._events.push(new JobFailedEvent(this._id, this._by));
   }
 
   public get id(): string {
@@ -124,7 +110,7 @@ export class JobModel {
   public get outputPicture() {
     return this._outputPicture;
   }
-  public get status(): 'pending' | 'running' | 'done' | 'failure' {
+  public get status(): JobStatus {
     return this._status;
   }
 
@@ -137,11 +123,6 @@ export class JobModel {
   }
   public get name(): string {
     return this._name;
-  }
-
-  public commit() {
-    this._events.forEach((event) => this._eventBus.publish(event));
-    this._events = [];
   }
 
   public get properties(): JobProperties {

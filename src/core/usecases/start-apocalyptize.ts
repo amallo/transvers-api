@@ -3,36 +3,85 @@ import { Dependencies } from '../dependencies';
 import { Handler } from '../handlers/handler';
 import { JobModel } from '../models/job.model';
 import { PictureModel } from '../models/picture.model';
-
+import { JobTaskResult } from '../gateways/job.task';
 export class StartApocalyptizeCommandHandler
   implements Handler<StartApocalyptizeCommand>
 {
   constructor(private dependencies: Dependencies) {}
-  async handle({ by, jobId }: StartApocalyptizeCommand) {
+
+  async onJobDone(taskResult: JobTaskResult) {
+    const {
+      httpClient,
+      fileStorage,
+      dateService,
+      jobRepository,
+      pictureIdGenerator,
+      notifier,
+      notificationIdGenerator,
+    } = this.dependencies;
+    const now = dateService.nowIs();
+    const job = await jobRepository.getById(taskResult.jobId);
+    const outputPictureId = pictureIdGenerator.generate();
+    const outputPicture = new PictureModel(outputPictureId, job.by);
+
+    try {
+      const outputStream = await httpClient.downloadAsStream(
+        taskResult.outputUrl,
+      );
+      await fileStorage.writeStream(outputStream, outputPicture.path);
+      job.done(now.toISOString(), outputPicture);
+      return jobRepository.save(job);
+    } catch (e) {
+      job.fail(e);
+      return notifier.notify({
+        id: notificationIdGenerator.generate(),
+        jobId: job.id,
+        status: 'failure',
+        to: job.by,
+        startedAt: now.toISOString(),
+        type: 'job',
+      });
+    }
+  }
+
+  async handle({ by, jobId, inputStream }: StartApocalyptizeCommand) {
     const {
       pictureIdGenerator,
-      pictureRepository,
       jobRepository,
-      eventBus,
       dateService,
+      fileStorage,
+      jobTask,
+      notifier,
+      notificationIdGenerator,
     } = this.dependencies;
-    const willSavePictureId = pictureIdGenerator.generate();
+    jobTask.registerDoneHander(jobId, this.onJobDone.bind(this));
+
+    const inputPictureId = pictureIdGenerator.generate();
     const now = dateService.nowIs();
-    const job = JobModel.createPendingJob(eventBus, {
+    const job = JobModel.createPendingJob({
       id: jobId,
       by,
       name: 'apocalyptize',
     });
-    const inputPicture = new PictureModel(willSavePictureId, job.by);
+
+    const inputPicture = new PictureModel(inputPictureId, job.by);
+
     try {
-      await pictureRepository.save(inputPicture);
+      await fileStorage.writeStream(inputStream, inputPicture.path);
       job.start(now.toISOString(), inputPicture);
+
       await jobRepository.save(job);
-      job.commit();
+      await jobTask.run(job);
     } catch (e) {
       job.fail(e);
-      await jobRepository.save(job);
-      job.commit();
+      return notifier.notify({
+        id: notificationIdGenerator.generate(),
+        jobId: job.id,
+        status: 'abandoned',
+        to: by,
+        startedAt: now.toISOString(),
+        type: 'job',
+      });
     }
   }
 }

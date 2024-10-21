@@ -11,13 +11,8 @@ import {
 import { PictureProperties } from '../models/picture.model';
 import { Notification } from '../models/notification.model';
 import { Stream } from 'stream';
-import {  JobModel, JobProperties } from '../models/job.model';
-import {
-  FinishApocalyptizeCommand,
-  FinishApocalyptizeCommandHandler,
-} from '../usecases/finish-apocalyptize';
+import { JobModel, JobProperties } from '../models/job.model';
 import { FakeHttpClient } from '../gateways/adapters/fake-http.client';
-import { FailurePictureRepository } from '../gateways/adapters/failure-picture.repository';
 import { Dependencies, DependenciesFactory } from '../dependencies';
 import { FakeBus } from '../events/adapters/fake.bus';
 import {
@@ -28,7 +23,11 @@ import {
   JobFailedEvent,
   JobFailedEventHandler,
 } from '../events/job-failed.event';
-import e from 'express';
+import { FakeFileStorage } from '../gateways/adapters/fake-file.storage';
+import { FailureFileStorage } from '../gateways/adapters/failure-file.storage';
+import { FailureJobRepository } from '../gateways/adapters/failure-job.repository';
+import { FakeJobTask } from '../gateways/adapters/fake-job.task';
+import { JobTaskResult } from '../gateways/job.task';
 
 export class ApocalytizeFixture {
   dateService: FakeDateService;
@@ -42,10 +41,8 @@ export class ApocalytizeFixture {
   httpClient: FakeHttpClient;
   dependencies: Dependencies;
   startApocalyptizeCommandHandler: StartApocalyptizeCommandHandler;
-  finishApocalyptizeCommandHandler: FinishApocalyptizeCommandHandler;
-
-  jobStartedEventHandler: JobStartedEventHandler;
-  jobFailedEventHandler: JobFailedEventHandler;
+  fileStorage: FakeFileStorage;
+  jobTask: FakeJobTask;
   constructor(private eventBus: FakeBus = new FakeBus()) {
     this.dateService = new FakeDateService(
       new Date('2011-10-05T14:48:00.000Z'),
@@ -58,6 +55,8 @@ export class ApocalytizeFixture {
     this.notifier = new FakeNotifier();
     this.notificationIdGenerator = new FakeIdGenerator();
     this.httpClient = new FakeHttpClient();
+    this.fileStorage = new FakeFileStorage();
+    this.jobTask = new FakeJobTask();
     this.dependencies = DependenciesFactory.forTest({
       dateService: this.dateService,
       jobRepository: this.jobRepository,
@@ -67,24 +66,16 @@ export class ApocalytizeFixture {
       notificationIdGenerator: this.notificationIdGenerator,
       httpClient: this.httpClient,
       eventBus: this.eventBus,
+      fileStorage: this.fileStorage,
+      jobTask: this.jobTask,
     });
     this.startApocalyptizeCommandHandler = new StartApocalyptizeCommandHandler(
       this.dependencies,
-    );
-    this.finishApocalyptizeCommandHandler =
-      new FinishApocalyptizeCommandHandler(this.dependencies);
-    this.commandDispatcher.registerHandler(
-      FinishApocalyptizeCommand,
-      this.finishApocalyptizeCommandHandler,
     );
     this.commandDispatcher.registerHandler(
       StartApocalyptizeCommand,
       this.startApocalyptizeCommandHandler,
     );
-    this.jobStartedEventHandler = new JobStartedEventHandler(this.dependencies);
-    this.eventBus.register(JobStartedEvent, this.jobStartedEventHandler);
-    this.jobFailedEventHandler = new JobFailedEventHandler(this.dependencies);
-    this.eventBus.register(JobFailedEvent, this.jobFailedEventHandler);
   }
   givenNewPictureId(id: string) {
     this.pictureIdGenerator.willGenerate(id);
@@ -97,7 +88,6 @@ export class ApocalytizeFixture {
     by: string;
     input: string;
     name: string;
-    status: string;
     startedAt: string;
   }) {
     const job = JobModel.createStartedJob(this.eventBus, {
@@ -109,6 +99,17 @@ export class ApocalytizeFixture {
     });
     this.jobRepository.save(job);
   }
+  forceJobDoneWith(result: JobTaskResult) {
+    return this.jobTask.forceJobDone(result);
+  }
+  forceJobDoneWithError(result: JobTaskResult, error: Error) {
+    const failureFileStorage = new FailureFileStorage(error);
+    this.dependencies.fileStorage = failureFileStorage;
+    return this.jobTask.forceJobDone(result);
+  }
+  givenDownloadStreamForUrl(url: string, stream: Stream) {
+    this.httpClient.withDownloadStreamForUrl(url, stream);
+  }
   whenStartingApocalyptizePicture(
     pictureStream: Stream,
     user: string,
@@ -118,27 +119,28 @@ export class ApocalytizeFixture {
       new StartApocalyptizeCommand(pictureStream, user, jobId),
     );
   }
-  whenStartingApocalyptizePictureWithSavingPictureFailure(
+  whenStartingApocalyptizeWithSavingPictureFailure(
     pictureStream: Stream,
     user: string,
     jobId: string,
     error: Error,
   ) {
-    const failurePictureRepository = new FailurePictureRepository(error);
-    this.dependencies.pictureRepository = failurePictureRepository;
+    const failureFileStorage = new FailureFileStorage(error);
+    this.dependencies.fileStorage = failureFileStorage;
     return this.commandDispatcher.dispatch(
       new StartApocalyptizeCommand(pictureStream, user, jobId),
     );
   }
-  whenFinishingApocalyptizePicture({
-    jobId,
-    output,
-  }: {
-    jobId: string;
-    output: string;
-  }) {
+  whenStartingApocalyptizeWithJobFailure(
+    pictureStream: Stream,
+    user: string,
+    jobId: string,
+    error: Error,
+  ) {
+    const failureJobRepository = new FailureJobRepository(error);
+    this.dependencies.jobRepository = failureJobRepository;
     return this.commandDispatcher.dispatch(
-      new FinishApocalyptizeCommand(output, jobId),
+      new StartApocalyptizeCommand(pictureStream, user, jobId),
     );
   }
   expectLastPictureToEqual(expected: PictureProperties) {
@@ -149,5 +151,13 @@ export class ApocalytizeFixture {
   }
   expectLastJobToEqual(expected: JobProperties) {
     expect(this.jobRepository.last().properties).toEqual(expected);
+  }
+  expectSavedPictureContentAsString(
+    expectedPath: string,
+    expectedContent: string,
+  ) {
+    expect(this.fileStorage.writtenFileAsString(expectedPath)).toEqual(
+      expectedContent,
+    );
   }
 }

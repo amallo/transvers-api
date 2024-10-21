@@ -22,7 +22,7 @@ export class JobFailedEventHandler implements Handler<JobFailedEvent> {
       id: willCreateNotificationId,
       jobId: jobId,
       status: 'failure',
-      at: now.toISOString(),
+      startedAt: now.toISOString(),
     });
   }
 }

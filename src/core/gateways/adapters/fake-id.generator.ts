@@ -1,16 +1,15 @@
-import { IdGenerator } from "../id.generator";
+import { IdGenerator } from '../id.generator';
 
 export class FakeIdGenerator implements IdGenerator {
-    private currentId: string;
+  private ids: string[] = [];
 
-    constructor() {}
+  constructor() {}
 
-    generate(): string {
-        return this.currentId;
-    }
+  generate(): string {
+    return this.ids.shift() || '';
+  }
 
-    willGenerate(id: string): void {
-        this.currentId = id;
-    }
-
+  willGenerate(id: string): void {
+    this.ids.push(id);
+  }
 }

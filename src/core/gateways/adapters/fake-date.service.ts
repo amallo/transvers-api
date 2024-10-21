@@ -1,6 +1,6 @@
-import { DateService } from "../date.service";
+import { DateProvider } from "../date.provider";
 
-export class FakeDateService implements DateService {
+export class FakeDateService implements DateProvider {
     private currentDate: Date;
 
     constructor(private now: Date) {

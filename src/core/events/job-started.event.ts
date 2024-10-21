@@ -11,17 +11,16 @@ export class JobStartedEvent {
 export class JobStartedEventHandler implements Handler<JobStartedEvent> {
   constructor(private dependencies: Dependencies) {}
 
-  async handle({ jobId }: JobStartedEvent): Promise<void> {
-    const { notifier, dateService, notificationIdGenerator, jobRepository } =
+  async handle({ jobId, startedBy }: JobStartedEvent): Promise<void> {
+    const { notifier, dateService, notificationIdGenerator } =
       this.dependencies;
     const willCreateNotificationId = notificationIdGenerator.generate();
     const now = dateService.nowIs();
-    const job = await jobRepository.getById(jobId);
     notifier.notify({
       type: 'job',
-      to: job.by,
+      to: startedBy,
       id: willCreateNotificationId,
-      jobId: job.id,
+      jobId,
       status: 'running',
       at: now.toISOString(),
     });

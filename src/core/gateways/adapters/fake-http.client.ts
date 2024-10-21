@@ -1,9 +1,5 @@
-import { Readable, Stream } from 'stream';
+import {  Stream } from 'stream';
 import { HttpClient } from '../http.client';
-
-async function* generateFileContent() {
-  yield 'THIS-IS-A-FAKE-FILE';
-}
 
 export class FakeHttpClient implements HttpClient {
   private streams: Map<string, Stream> = new Map();
@@ -13,7 +9,7 @@ export class FakeHttpClient implements HttpClient {
   }
 
   async downloadAsStream(_url: string): Promise<Stream> {
-    const readableStream = Readable.from(generateFileContent());
+    const readableStream = this.streams.get(_url);
     return Promise.resolve(readableStream);
   }
 }
