@@ -1,13 +1,17 @@
-import { DateProvider } from "../date.provider";
+import { DateProvider } from '../date.provider';
 
 export class FakeDateService implements DateProvider {
-    private currentDate: Date;
+  private dates: Date[] = [];
 
-    constructor(private now: Date) {
+  constructor(now: Date | Date[]) {
+    if (now instanceof Date) {
+      this.dates.push(now);
+    } else {
+      this.dates = now;
     }
+  }
 
-    nowIs(): Date {
-        return this.now;
-    }
-
+  nowIs(): Date {
+    return this.dates.shift();
+  }
 }

@@ -2,6 +2,7 @@ import { FakeDispatcher } from './dispatchers/adapters/fake.dispatcher';
 import { Dispatcher } from './dispatchers/dispatcher';
 import { FakeBus } from './events/adapters/fake.bus';
 import { Bus } from './events/bus';
+import { FakeConfigGateway } from './gateways/adapters/fake-config.gateway';
 import { FakeDateService } from './gateways/adapters/fake-date.service';
 import { FakeFileStorage } from './gateways/adapters/fake-file.storage';
 import { FakeHttpClient } from './gateways/adapters/fake-http.client';
@@ -10,6 +11,7 @@ import { FakeJobRepository } from './gateways/adapters/fake-job.repository';
 import { FakeJobTask } from './gateways/adapters/fake-job.task';
 import { FakeNotifier } from './gateways/adapters/fake-notifier';
 import { FakePictureRepository } from './gateways/adapters/fake-picture.repository';
+import { ConfigGateway } from './gateways/config.gateway';
 import { DateProvider } from './gateways/date.provider';
 import { FileStorage } from './gateways/file.storage';
 import { HttpClient } from './gateways/http.client';
@@ -30,6 +32,7 @@ export type Dependencies = {
   eventBus: Bus;
   fileStorage: FileStorage;
   jobTask: JobTask;
+  config: ConfigGateway;
 };
 
 const defaultTestDependencies: Dependencies = {
@@ -43,6 +46,7 @@ const defaultTestDependencies: Dependencies = {
   eventBus: new FakeBus(),
   fileStorage: new FakeFileStorage(),
   jobTask: new FakeJobTask(),
+  config : new FakeConfigGateway(),
 };
 export class DependenciesFactory {
   static forTest(

@@ -20,6 +20,7 @@ type DoneJobNotification = {
   jobId: string;
   status: 'done';
   startedAt: string;
+  finishedAt: string;
   output: string;
 };
 

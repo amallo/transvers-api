@@ -15,19 +15,12 @@ import { JobModel, JobProperties } from '../models/job.model';
 import { FakeHttpClient } from '../gateways/adapters/fake-http.client';
 import { Dependencies, DependenciesFactory } from '../dependencies';
 import { FakeBus } from '../events/adapters/fake.bus';
-import {
-  JobStartedEvent,
-  JobStartedEventHandler,
-} from '../events/job-started.event';
-import {
-  JobFailedEvent,
-  JobFailedEventHandler,
-} from '../events/job-failed.event';
 import { FakeFileStorage } from '../gateways/adapters/fake-file.storage';
 import { FailureFileStorage } from '../gateways/adapters/failure-file.storage';
 import { FailureJobRepository } from '../gateways/adapters/failure-job.repository';
 import { FakeJobTask } from '../gateways/adapters/fake-job.task';
 import { JobTaskResult } from '../gateways/job.task';
+import { FakeConfigGateway } from '../gateways/adapters/fake-config.gateway';
 
 export class ApocalytizeFixture {
   dateService: FakeDateService;
@@ -43,10 +36,12 @@ export class ApocalytizeFixture {
   startApocalyptizeCommandHandler: StartApocalyptizeCommandHandler;
   fileStorage: FakeFileStorage;
   jobTask: FakeJobTask;
+  configGateway: FakeConfigGateway;
   constructor(private eventBus: FakeBus = new FakeBus()) {
-    this.dateService = new FakeDateService(
+    this.dateService = new FakeDateService([
       new Date('2011-10-05T14:48:00.000Z'),
-    );
+      new Date('2011-10-05T14:48:01.000Z'),
+    ]);
     this.jobRepository = new FakeJobRepository();
     this.pictureRepository = new FakePictureRepository();
     this.pictureIdGenerator = new FakeIdGenerator();
@@ -57,6 +52,7 @@ export class ApocalytizeFixture {
     this.httpClient = new FakeHttpClient();
     this.fileStorage = new FakeFileStorage();
     this.jobTask = new FakeJobTask();
+    this.configGateway = new FakeConfigGateway();
     this.dependencies = DependenciesFactory.forTest({
       dateService: this.dateService,
       jobRepository: this.jobRepository,
@@ -68,6 +64,7 @@ export class ApocalytizeFixture {
       eventBus: this.eventBus,
       fileStorage: this.fileStorage,
       jobTask: this.jobTask,
+      config: this.configGateway,
     });
     this.startApocalyptizeCommandHandler = new StartApocalyptizeCommandHandler(
       this.dependencies,
@@ -99,10 +96,13 @@ export class ApocalytizeFixture {
     });
     this.jobRepository.save(job);
   }
-  forceJobDoneWith(result: JobTaskResult) {
+  givenConfig({ filesUrl }: { filesUrl: string }) {
+    this.configGateway.withConfig({ filesUrl });
+  }
+  async forceJobDoneWith(result: JobTaskResult) {
     return this.jobTask.forceJobDone(result);
   }
-  forceJobDoneWithError(result: JobTaskResult, error: Error) {
+  async forceJobDoneWithError(result: JobTaskResult, error: Error) {
     const failureFileStorage = new FailureFileStorage(error);
     this.dependencies.fileStorage = failureFileStorage;
     return this.jobTask.forceJobDone(result);

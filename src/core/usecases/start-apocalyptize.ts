@@ -18,6 +18,7 @@ export class StartApocalyptizeCommandHandler
       pictureIdGenerator,
       notifier,
       notificationIdGenerator,
+      config,
     } = this.dependencies;
     const now = dateService.nowIs();
     const job = await jobRepository.getById(taskResult.jobId);
@@ -30,7 +31,17 @@ export class StartApocalyptizeCommandHandler
       );
       await fileStorage.writeStream(outputStream, outputPicture.path);
       job.done(now.toISOString(), outputPicture);
-      return jobRepository.save(job);
+      await jobRepository.save(job);
+      return notifier.notify({
+        id: notificationIdGenerator.generate(),
+        jobId: job.id,
+        status: 'done',
+        to: job.by,
+        startedAt: job.startedAt,
+        type: 'job',
+        output: config.filesUrl + '/' + outputPicture.id,
+        finishedAt: job.finishedAt,
+      });
     } catch (e) {
       job.fail(e);
       return notifier.notify({
@@ -38,7 +49,7 @@ export class StartApocalyptizeCommandHandler
         jobId: job.id,
         status: 'failure',
         to: job.by,
-        startedAt: now.toISOString(),
+        startedAt: job.startedAt,
         type: 'job',
       });
     }
@@ -69,6 +80,7 @@ export class StartApocalyptizeCommandHandler
     try {
       await fileStorage.writeStream(inputStream, inputPicture.path);
       job.start(now.toISOString(), inputPicture);
+      
 
       await jobRepository.save(job);
       await jobTask.run(job);
@@ -76,7 +88,7 @@ export class StartApocalyptizeCommandHandler
       job.fail(e);
       return notifier.notify({
         id: notificationIdGenerator.generate(),
-        jobId: job.id,
+        jobId: jobId,
         status: 'abandoned',
         to: by,
         startedAt: now.toISOString(),

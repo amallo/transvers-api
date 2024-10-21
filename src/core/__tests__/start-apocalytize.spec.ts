@@ -44,6 +44,10 @@ it('finishes to apocalyptize a picture', async () => {
   outputPictureStream.push(null);
   const ouputPictureModel = new PictureModel('output-image-0', 'audie');
 
+  fixture.givenConfig({
+    filesUrl: 'http://api/files',
+  });
+
   fixture.givenNewPictureId('input-image-0');
   fixture.givenNewPictureId('output-image-0');
   fixture.givenNewNotificationId('notification-id-0');
@@ -74,5 +78,16 @@ it('finishes to apocalyptize a picture', async () => {
     inputPicture: inputPictureModel,
     outputPicture: ouputPictureModel,
     startedAt: '2011-10-05T14:48:00.000Z',
+    finishedAt: '2011-10-05T14:48:01.000Z',
+  });
+  fixture.expectLastSentNotificationToEqual({
+    type: 'job',
+    to: 'audie',
+    id: 'notification-id-0',
+    jobId: 'job-id-0',
+    status: 'done',
+    startedAt: '2011-10-05T14:48:00.000Z',
+    finishedAt: '2011-10-05T14:48:01.000Z',
+    output: 'http://api/files/output-image-0',
   });
 });

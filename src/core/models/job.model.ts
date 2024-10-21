@@ -1,5 +1,4 @@
 import { Bus } from '../events/bus';
-import { JobTaskResult } from '../gateways/job.task';
 import { PictureModel } from './picture.model';
 
 export interface JobProperties {
@@ -9,9 +8,12 @@ export interface JobProperties {
   name: string;
   inputPicture?: PictureModel;
   startedAt?: string;
+  finishedAt?: string;
   error?: string;
   outputPicture?: PictureModel;
 }
+
+
 type JobStatus = 'pending' | 'running' | 'step' | 'done' | 'failure';
 export class JobModel {
   private _error: string;
@@ -24,6 +26,7 @@ export class JobModel {
     private _startedAt?: string,
     private _inputPicture?: PictureModel,
     private _outputPicture?: PictureModel,
+    private _finishedAt?: string,
   ) {}
 
   static createPendingJob(properties: {
@@ -66,6 +69,7 @@ export class JobModel {
     by: string;
     name: string;
     startedAt: string;
+    finishedAt: string;
     inputPictureId: string;
     outputPictureId: string;
   }) {
@@ -77,6 +81,7 @@ export class JobModel {
       properties.startedAt,
       new PictureModel(properties.inputPictureId, properties.by),
       new PictureModel(properties.outputPictureId, properties.by),
+      properties.finishedAt,
     );
     return job;
   }
@@ -89,6 +94,7 @@ export class JobModel {
   done(at: string, outputPicture: PictureModel) {
     this._status = 'done';
     this._outputPicture = outputPicture;
+    this._finishedAt = at;
   }
   fail(error: Error) {
     this._status = 'failure';
@@ -117,6 +123,9 @@ export class JobModel {
   public get startedAt(): string {
     return this._startedAt;
   }
+  public get finishedAt(): string {
+    return this._finishedAt;
+  }
 
   public get error(): string {
     return this._error;
@@ -135,6 +144,7 @@ export class JobModel {
       error: this.error,
       inputPicture: this.inputPicture,
       outputPicture: this.outputPicture,
+      finishedAt: this._finishedAt,
     };
   }
 }
