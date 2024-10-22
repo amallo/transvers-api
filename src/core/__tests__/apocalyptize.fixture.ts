@@ -4,10 +4,6 @@ import { FakeIdGenerator } from '../gateways/adapters/fake-id.generator';
 import { FakeJobRepository } from '../gateways/adapters/fake-job.repository';
 import { FakeNotifier } from '../gateways/adapters/fake-notifier';
 import { FakePictureRepository } from '../gateways/adapters/fake-picture.repository';
-import {
-  StartApocalyptizeCommand,
-  StartApocalyptizeCommandHandler,
-} from '../usecases/start-apocalyptize';
 import { PictureProperties } from '../models/picture.model';
 import { Notification } from '../models/notification.model';
 import { Stream } from 'stream';
@@ -21,6 +17,7 @@ import { FailureJobRepository } from '../gateways/adapters/failure-job.repositor
 import { FakeJobTask } from '../gateways/adapters/fake-job.task';
 import { JobTaskResult } from '../gateways/job.task';
 import { FakeConfigGateway } from '../gateways/adapters/fake-config.gateway';
+import { ApocalyptizeService } from '../services/apocalytize.service';
 
 export class ApocalytizeFixture {
   dateService: FakeDateService;
@@ -28,12 +25,13 @@ export class ApocalytizeFixture {
   notificationIdGenerator: FakeIdGenerator;
   pictureRepository: FakePictureRepository;
   pictureIdGenerator: FakeIdGenerator;
+  jobIdGenerator: FakeIdGenerator;
   commandDispatcher: FakeDispatcher;
   queryDispatcher: FakeDispatcher;
   notifier: FakeNotifier;
   httpClient: FakeHttpClient;
   dependencies: Dependencies;
-  startApocalyptizeCommandHandler: StartApocalyptizeCommandHandler;
+  apocalyptizeService: ApocalyptizeService;
   fileStorage: FakeFileStorage;
   jobTask: FakeJobTask;
   configGateway: FakeConfigGateway;
@@ -53,7 +51,8 @@ export class ApocalytizeFixture {
     this.fileStorage = new FakeFileStorage();
     this.jobTask = new FakeJobTask();
     this.configGateway = new FakeConfigGateway();
-    this.dependencies = DependenciesFactory.forTest({
+    this.jobIdGenerator = new FakeIdGenerator();
+    this.dependencies = DependenciesFactory.build({
       dateService: this.dateService,
       jobRepository: this.jobRepository,
       pictureRepository: this.pictureRepository,
@@ -65,20 +64,18 @@ export class ApocalytizeFixture {
       fileStorage: this.fileStorage,
       jobTask: this.jobTask,
       config: this.configGateway,
+      jobIdGenerator: this.jobIdGenerator,
     });
-    this.startApocalyptizeCommandHandler = new StartApocalyptizeCommandHandler(
-      this.dependencies,
-    );
-    this.commandDispatcher.registerHandler(
-      StartApocalyptizeCommand,
-      this.startApocalyptizeCommandHandler,
-    );
+    this.apocalyptizeService = new ApocalyptizeService(this.dependencies);
   }
   givenNewPictureId(id: string) {
     this.pictureIdGenerator.willGenerate(id);
   }
   givenNewNotificationId(id: string) {
     this.notificationIdGenerator.willGenerate(id);
+  }
+  givenNewJobId(id: string) {
+    this.jobIdGenerator.willGenerate(id);
   }
   givenAlreadyStartedJob(jobProperties: {
     id: string;
@@ -110,38 +107,35 @@ export class ApocalytizeFixture {
   givenDownloadStreamForUrl(url: string, stream: Stream) {
     this.httpClient.withDownloadStreamForUrl(url, stream);
   }
-  whenStartingApocalyptizePicture(
-    pictureStream: Stream,
-    user: string,
-    jobId: string,
-  ) {
-    return this.commandDispatcher.dispatch(
-      new StartApocalyptizeCommand(pictureStream, user, jobId),
-    );
+  whenStartingApocalyptizePicture(pictureStream: Stream, user: string) {
+    return this.apocalyptizeService.start({
+      by: user,
+      inputStream: pictureStream,
+    });
   }
   whenStartingApocalyptizeWithSavingPictureFailure(
     pictureStream: Stream,
     user: string,
-    jobId: string,
     error: Error,
   ) {
     const failureFileStorage = new FailureFileStorage(error);
     this.dependencies.fileStorage = failureFileStorage;
-    return this.commandDispatcher.dispatch(
-      new StartApocalyptizeCommand(pictureStream, user, jobId),
-    );
+    return this.apocalyptizeService.start({
+      by: user,
+      inputStream: pictureStream,
+    });
   }
   whenStartingApocalyptizeWithJobFailure(
     pictureStream: Stream,
     user: string,
-    jobId: string,
     error: Error,
   ) {
     const failureJobRepository = new FailureJobRepository(error);
     this.dependencies.jobRepository = failureJobRepository;
-    return this.commandDispatcher.dispatch(
-      new StartApocalyptizeCommand(pictureStream, user, jobId),
-    );
+    return this.apocalyptizeService.start({
+      by: user,
+      inputStream: pictureStream,
+    });
   }
   expectLastPictureToEqual(expected: PictureProperties) {
     expect(this.pictureRepository.last().properties).toEqual(expected);

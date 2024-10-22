@@ -9,15 +9,12 @@ beforeEach(() => {
 it('start to apocalyptize a picture', async () => {
   fixture.givenNewPictureId('input-image-0');
   fixture.givenNewNotificationId('notification-id-0');
+  fixture.givenNewJobId('job-id-0');
 
   const inputPictureStream = new Stream.Readable();
   inputPictureStream.push('Content of the picture');
   inputPictureStream.push(null);
-  await fixture.whenStartingApocalyptizePicture(
-    inputPictureStream,
-    'audie',
-    'job-id-0',
-  );
+  await fixture.whenStartingApocalyptizePicture(inputPictureStream, 'audie');
   const inputPictureModel = new PictureModel('input-image-0', 'audie');
   fixture.expectSavedPictureContentAsString(
     inputPictureModel.path,
@@ -51,16 +48,13 @@ it('finishes to apocalyptize a picture', async () => {
   fixture.givenNewPictureId('input-image-0');
   fixture.givenNewPictureId('output-image-0');
   fixture.givenNewNotificationId('notification-id-0');
+  fixture.givenNewJobId('job-id-0');
   fixture.givenDownloadStreamForUrl(
     'http://external/picture.png',
     outputPictureStream,
   );
 
-  await fixture.whenStartingApocalyptizePicture(
-    inputPictureStream,
-    'audie',
-    'job-id-0',
-  );
+  await fixture.whenStartingApocalyptizePicture(inputPictureStream, 'audie');
   await fixture.forceJobDoneWith({
     jobId: 'job-id-0',
     outputUrl: 'http://external/picture.png',

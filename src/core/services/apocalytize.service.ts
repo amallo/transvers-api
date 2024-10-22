@@ -1,12 +1,10 @@
 import { Stream } from 'stream';
 import { Dependencies } from '../dependencies';
-import { Handler } from '../handlers/handler';
+import { JobTaskResult } from '../gateways/job.task';
 import { JobModel } from '../models/job.model';
 import { PictureModel } from '../models/picture.model';
-import { JobTaskResult } from '../gateways/job.task';
-export class StartApocalyptizeCommandHandler
-  implements Handler<StartApocalyptizeCommand>
-{
+
+export class ApocalyptizeService {
   constructor(private dependencies: Dependencies) {}
 
   async onJobDone(taskResult: JobTaskResult) {
@@ -55,16 +53,18 @@ export class StartApocalyptizeCommandHandler
     }
   }
 
-  async handle({ by, jobId, inputStream }: StartApocalyptizeCommand) {
+  async start({ by, inputStream }: { by: string; inputStream: Stream }) {
     const {
       pictureIdGenerator,
       jobRepository,
+      jobIdGenerator,
       dateService,
       fileStorage,
       jobTask,
       notifier,
       notificationIdGenerator,
     } = this.dependencies;
+    const jobId = jobIdGenerator.generate();
     jobTask.registerDoneHander(jobId, this.onJobDone.bind(this));
 
     const inputPictureId = pictureIdGenerator.generate();
@@ -95,12 +95,4 @@ export class StartApocalyptizeCommandHandler
       });
     }
   }
-}
-
-export class StartApocalyptizeCommand {
-  constructor(
-    public readonly inputStream: Stream,
-    public readonly by: string,
-    public readonly jobId: string,
-  ) {}
 }

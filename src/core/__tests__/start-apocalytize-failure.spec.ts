@@ -8,13 +8,13 @@ beforeEach(() => {
 it('abandon job when fail to start', async () => {
   fixture.givenNewPictureId('input-image-0');
   fixture.givenNewNotificationId('notification-id-0');
+  fixture.givenNewJobId('job-id-0');
   const inputPictureStream = new Stream.Readable();
   inputPictureStream.push('Content of the picture');
   inputPictureStream.push(null);
   await fixture.whenStartingApocalyptizeWithJobFailure(
     inputPictureStream,
     'audie',
-    'job-id-0',
     new Error('Failed to save the picture'),
   );
   fixture.expectLastSentNotificationToEqual({
@@ -39,16 +39,13 @@ it('fails to done job', async () => {
   fixture.givenNewPictureId('input-image-0');
   fixture.givenNewPictureId('output-image-0');
   fixture.givenNewNotificationId('notification-id-0');
+  fixture.givenNewJobId('job-id-0');
   fixture.givenDownloadStreamForUrl(
     'http://external/picture.png',
     outputPictureStream,
   );
 
-  await fixture.whenStartingApocalyptizePicture(
-    inputPictureStream,
-    'audie',
-    'job-id-0',
-  );
+  await fixture.whenStartingApocalyptizePicture(inputPictureStream, 'audie');
   await fixture.forceJobDoneWithError(
     {
       jobId: 'job-id-0',

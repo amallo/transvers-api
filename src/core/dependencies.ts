@@ -1,5 +1,3 @@
-import { FakeDispatcher } from './dispatchers/adapters/fake.dispatcher';
-import { Dispatcher } from './dispatchers/dispatcher';
 import { FakeBus } from './events/adapters/fake.bus';
 import { Bus } from './events/bus';
 import { FakeConfigGateway } from './gateways/adapters/fake-config.gateway';
@@ -26,6 +24,7 @@ export type Dependencies = {
   jobRepository: JobRepository;
   pictureRepository: PictureRepository;
   pictureIdGenerator: IdGenerator;
+  jobIdGenerator: IdGenerator;
   notifier: Notifier;
   notificationIdGenerator: IdGenerator;
   httpClient: HttpClient;
@@ -42,20 +41,21 @@ const defaultTestDependencies: Dependencies = {
   pictureIdGenerator: new FakeIdGenerator(),
   notifier: new FakeNotifier(),
   notificationIdGenerator: new FakeIdGenerator(),
+  jobIdGenerator : new FakeIdGenerator(),
   httpClient: new FakeHttpClient(),
   eventBus: new FakeBus(),
   fileStorage: new FakeFileStorage(),
   jobTask: new FakeJobTask(),
-  config : new FakeConfigGateway(),
+  config: new FakeConfigGateway(),
 };
+
 export class DependenciesFactory {
-  static forTest(
+  static build(
     deps: Partial<Dependencies> = defaultTestDependencies,
   ): Dependencies {
     return {
       ...defaultTestDependencies,
       ...deps,
-      pictureRepository: deps.pictureRepository || new FakePictureRepository(),
     };
   }
 }
