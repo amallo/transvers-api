@@ -12,7 +12,7 @@ import { StartApocalyptizeCommand } from 'src/core/usecases/start-apocalyptize.u
 export class AppController {
   constructor(private readonly commandBus: CommandBus) {}
 
-  @Post()
+  @Post('apocalyptize')
   @UseInterceptors(FileInterceptor('input'))
   apocalyptize(
     @UploadedFile() inputPicture: Express.Multer.File,
