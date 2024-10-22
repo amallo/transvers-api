@@ -1,4 +1,4 @@
-import { ConfigGateway } from '../config.gateway';
+import { ConfigGateway } from '../../config.gateway';
 
 type Config = {
   filesUrl: string;

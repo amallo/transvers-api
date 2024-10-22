@@ -1,5 +1,5 @@
 import { Stream } from 'stream';
-import { FileStorage } from '../file.storage';
+import { FileStorage } from '../../file.storage';
 
 export class FakeFileStorage implements FileStorage {
   private storage: Map<string, Buffer> = new Map();

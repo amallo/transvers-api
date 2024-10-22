@@ -1,4 +1,4 @@
-import { IdGenerator } from '../id.generator';
+import { IdGenerator } from '../../id.generator';
 
 export class FakeIdGenerator implements IdGenerator {
   private ids: string[] = [];

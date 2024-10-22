@@ -1,5 +1,5 @@
-import { Notification } from '../../models/notification.model';
-import { Notifier } from '../notifier';
+import { Notification } from 'src/core/models/notification.model';
+import { Notifier } from '../../notifier';
 
 export class FakeNotifier implements Notifier {
   private notifications: Notification[] = [];

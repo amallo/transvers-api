@@ -1,4 +1,4 @@
-import { DateProvider } from '../date.provider';
+import { DateProvider } from '../../date.provider';
 
 export class FakeDateService implements DateProvider {
   private dates: Date[] = [];

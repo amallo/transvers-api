@@ -1,5 +1,5 @@
 import { JobModel } from 'src/core/models/job.model';
-import { JobTask, JobTaskResult } from '../job.task';
+import { JobTask, JobTaskResult } from '../../job.task';
 
 export type CompletedJobCallback = (jobId: string, outputUrl: string) => void;
 export class FakeJobTask implements JobTask {

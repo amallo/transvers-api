@@ -1,5 +1,6 @@
-import { PictureRepository } from '../picture.repository';
+
 import { PictureModel } from 'src/core/models/picture.model';
+import { PictureRepository } from '../../picture.repository';
 
 export class FakePictureRepository implements PictureRepository {
   private pictures: PictureModel[] = [];

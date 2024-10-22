@@ -1,5 +1,5 @@
 import { Stream } from 'stream';
-import { HttpClient } from '../http.client';
+import { HttpClient } from '../../http.client';
 
 
 export class DownloadFailureHttpClient implements HttpClient {

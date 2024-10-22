@@ -1,5 +1,5 @@
 import { Stream } from 'stream';
-import { FileStorage } from '../file.storage';
+import { FileStorage } from '../../file.storage';
 
 export class FailureFileStorage implements FileStorage {
   constructor(private error: Error) {}

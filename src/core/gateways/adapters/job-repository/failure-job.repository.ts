@@ -1,4 +1,4 @@
-import { JobRepository } from '../job.repository';
+import { JobRepository } from '../../job.repository';
 import { JobModel } from 'src/core/models/job.model';
 
 export class FailureJobRepository implements JobRepository {

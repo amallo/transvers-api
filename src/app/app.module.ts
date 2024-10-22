@@ -3,9 +3,9 @@ import { AppController } from './controllers/app.controller';
 import { CqrsModule } from '@nestjs/cqrs';
 import { Dependencies, DependenciesFactory } from 'src/core/dependencies';
 import { ApocalyptizeService } from 'src/core/services/apocalytize.service';
-import { NanoidIdGenerator } from 'src/core/gateways/adapters/nanoid-id.generator';
+import { NanoidIdGenerator } from 'src/core/gateways/adapters/id/nanoid-id.generator';
 import { ConfigModule } from '@nestjs/config';
-import { NestJSConfigGateway } from 'src/core/gateways/adapters/nestjs-config.gateway';
+import { NestJSConfigGateway } from 'src/core/gateways/adapters/config/nestjs-config.gateway';
 import { StartApocalyptizeCommandHandler } from './handlers/start-apocalytize.handler';
 
 const makeDepenciesProvider = (): Provider[] => {

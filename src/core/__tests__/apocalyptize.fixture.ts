@@ -1,22 +1,22 @@
 import { FakeDispatcher } from '../dispatchers/adapters/fake.dispatcher';
-import { FakeDateService } from '../gateways/adapters/fake-date.service';
-import { FakeIdGenerator } from '../gateways/adapters/fake-id.generator';
-import { FakeJobRepository } from '../gateways/adapters/fake-job.repository';
-import { FakeNotifier } from '../gateways/adapters/fake-notifier';
-import { FakePictureRepository } from '../gateways/adapters/fake-picture.repository';
+import { FakeDateService } from '../gateways/adapters/config/fake-date.service';
+import { FakeIdGenerator } from '../gateways/adapters/id/fake-id.generator';
+import { FakeJobRepository } from '../gateways/adapters/job-repository/fake-job.repository';
+import { FakeNotifier } from '../gateways/adapters/notifier/fake-notifier';
+import { FakePictureRepository } from '../gateways/adapters/picture-repository/fake-picture.repository';
 import { PictureProperties } from '../models/picture.model';
 import { Notification } from '../models/notification.model';
 import { Stream } from 'stream';
 import { JobModel, JobProperties } from '../models/job.model';
-import { FakeHttpClient } from '../gateways/adapters/fake-http.client';
+import { FakeHttpClient } from '../gateways/adapters/http/fake-http.client';
 import { Dependencies, DependenciesFactory } from '../dependencies';
 import { FakeBus } from '../events/adapters/fake.bus';
-import { FakeFileStorage } from '../gateways/adapters/fake-file.storage';
-import { FailureFileStorage } from '../gateways/adapters/failure-file.storage';
-import { FailureJobRepository } from '../gateways/adapters/failure-job.repository';
-import { FakeJobTask } from '../gateways/adapters/fake-job.task';
+import { FakeFileStorage } from '../gateways/adapters/file-storage/fake-file.storage';
+import { FailureFileStorage } from '../gateways/adapters/file-storage/failure-file.storage';
+import { FailureJobRepository } from '../gateways/adapters/job-repository/failure-job.repository';
+import { FakeJobTask } from '../gateways/adapters/job-task/fake-job.task';
 import { JobTaskResult } from '../gateways/job.task';
-import { FakeConfigGateway } from '../gateways/adapters/fake-config.gateway';
+import { FakeConfigGateway } from '../gateways/adapters/config/fake-config.gateway';
 import { ApocalyptizeService } from '../services/apocalytize.service';
 
 export class ApocalytizeFixture {

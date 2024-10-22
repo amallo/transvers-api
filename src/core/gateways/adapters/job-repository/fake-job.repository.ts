@@ -1,5 +1,5 @@
 import { JobModel } from 'src/core/models/job.model';
-import { JobRepository } from '../job.repository';
+import { JobRepository } from '../../job.repository';
 
 export class FakeJobRepository implements JobRepository {
   private jobs: JobModel[] = [];
