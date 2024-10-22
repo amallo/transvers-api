@@ -80,7 +80,6 @@ export class StartApocalyptizeCommandHandler
     try {
       await fileStorage.writeStream(inputStream, inputPicture.path);
       job.start(now.toISOString(), inputPicture);
-      
 
       await jobRepository.save(job);
       await jobTask.run(job);
